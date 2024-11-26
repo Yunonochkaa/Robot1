@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 public class Main {
 
     public static final Map<Integer, Integer> sizeToFreq = new HashMap<>();
+    private static final Object lock = new Object(); // Объект для синхронизации ^^
 
     public static void main(String[] args) throws InterruptedException {
         final int numberOfThreads = 1000;
@@ -14,7 +15,7 @@ public class Main {
             executorService.submit(() -> {
                 String route = generateRoute("RLRFR", 100);
                 int countR = countOccurrences(route, 'R');
-                updateFrequency(countR); // Обновление частоты
+                updateFrequency(countR);
                 System.out.println("Generated route: " + route + " -> Count of 'R': " + countR);
             });
         }
@@ -46,8 +47,10 @@ public class Main {
         return count;
     }
 
-    public static synchronized void updateFrequency(int countR) {
-        sizeToFreq.put(countR, sizeToFreq.getOrDefault(countR, 0) + 1);
+    public static void updateFrequency(int countR) {
+        synchronized (lock) {
+            sizeToFreq.put(countR, sizeToFreq.getOrDefault(countR, 0) + 1);
+        }
     }
 
     public static void printResults() {
